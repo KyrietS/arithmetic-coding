@@ -49,38 +49,35 @@ SCENARIO("BitWriter creates and opens file", "[BitWriter]") {
 }
 
 SCENARIO("BitWriter writes data to a file", "[BitWriter]") {
-	GIVEN("A file name") {
+	GIVEN("A BitWriter object") {
 		std::string filename = "_file_1.test.tmp";
 		fs::remove(filename);
+		BitWriter writer(filename);
 
-		AND_GIVEN("A BitWriter object created") {
-			BitWriter writer(filename);
+		WHEN("one byte 'a' is written") {
+			// 'a' (0x61) <-- bits are read from right to left
+			writer << 1 << 0 << 0 << 0;		// 0001
+			writer << 0 << 1 << 1 << 0;     // 0110
+			writer.flush();
 
-			WHEN("one byte 'a' is written") {
-				// 'a' (0x61) <-- bits are read from right to left
-				writer << 1 << 0 << 0 << 0;		// 0001
-				writer << 0 << 1 << 1 << 0;     // 0110
-				writer.flush();
+			THEN("file contains that byte 'a'") {
+				std::ifstream file(filename, std::ios_base::binary);
+				char letterA;
+				file.read(&letterA, 1);
 
-				THEN("file contains that byte 'a'") {
-					std::ifstream file(filename, std::ios_base::binary);
-					char letterA;
-					file.read(&letterA, 1);
-
-					CHECK(letterA == 'a');
-				}
+				CHECK(letterA == 'a');
 			}
-			WHEN("less than a byte is written") {
-				writer << 1 << 0 << 1 << 1;
-				writer.flush();
+		}
+		WHEN("less than a byte is written") {
+			writer << 1 << 0 << 1 << 1;
+			writer.flush();
 
-				THEN("file contains one byte padded with 0 bits") {
-					std::ifstream file(filename, std::ios_base::binary);
-					char byte;
-					file.read(&byte, 1);
+			THEN("file contains one byte padded with 0 bits") {
+				std::ifstream file(filename, std::ios_base::binary);
+				char byte;
+				file.read(&byte, 1);
 
-					CHECK(byte == 0b0000'1101);
-				}
+				CHECK(byte == 0b0000'1101);
 			}
 		}
 	}

@@ -2,12 +2,10 @@
 
 #include <filesystem>
 
-namespace fs = std::filesystem;
-
 BitWriter::BitWriter(std::string path)
 	: m_bitBuffer(BIT_BUFFER_CAPACITY)
 {
-	if (fs::exists(path))
+	if (std::filesystem::exists(path))
 		throw std::runtime_error("File with this name already exists");
 
 	m_fileStream.open(path, std::ios_base::binary);
