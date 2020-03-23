@@ -49,9 +49,10 @@ SCENARIO("BitWriter creates and opens file", "[BitWriter]") {
 }
 
 SCENARIO("BitWriter writes data to a file", "[BitWriter]") {
+	std::string filename = "_file_1.test.tmp";
+	fs::remove(filename);
+
 	GIVEN("A BitWriter object") {
-		std::string filename = "_file_1.test.tmp";
-		fs::remove(filename);
 		BitWriter writer(filename);
 
 		WHEN("one byte 'a' is written") {
@@ -92,4 +93,5 @@ SCENARIO("BitWriter writes data to a file", "[BitWriter]") {
 			}
 		}
 	}
+	fs::remove(filename);
 }
