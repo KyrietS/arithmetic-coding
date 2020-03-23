@@ -12,6 +12,9 @@ public:
 	BitWriter& operator<< (bool bit);
 	BitWriter& operator<< (int bit);
 
+	void writeN(bool bit, int n);
+	void writeN(int bit, int n);
+
 	void flush();
 
 	virtual ~BitWriter();

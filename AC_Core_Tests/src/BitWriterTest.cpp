@@ -80,5 +80,16 @@ SCENARIO("BitWriter writes data to a file", "[BitWriter]") {
 				CHECK(byte == 0b0000'1101);
 			}
 		}
+		WHEN("six same bits are written") {
+			writer.writeN(1, 6);
+			writer.flush();
+
+			THEN("file contains six '1' bist") {
+				std::ifstream file(filename, std::ios_base::binary);
+				char byte = file.get();
+
+				CHECK(byte == 0b0011'1111);
+			}
+		}
 	}
 }
