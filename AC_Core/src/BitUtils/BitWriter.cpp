@@ -45,6 +45,18 @@ BitWriter& BitWriter::operator<<(int bit)
 	return *this;
 }
 
+void BitWriter::writeN(bool bit, int n)
+{
+	while (n--) {
+		write(bit);
+	}
+}
+
+void BitWriter::writeN(int bit, int n)
+{
+	writeN(bit == 0 ? false : true, n);
+}
+
 void BitWriter::flush()
 {
 	auto bytes = m_bitBuffer.readAllBytes(0);
