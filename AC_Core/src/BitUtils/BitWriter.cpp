@@ -10,7 +10,7 @@ BitWriter::BitWriter(std::string path)
 	if (fs::exists(path))
 		throw std::runtime_error("File with this name already exists");
 
-	m_fileStream.open(path);
+	m_fileStream.open(path, std::ios_base::binary);
 	if (!m_fileStream.is_open())
 		throw std::runtime_error("Cannot open file");
 }

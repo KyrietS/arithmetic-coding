@@ -9,76 +9,79 @@
 
 namespace fs = std::filesystem;
 
-TEST_CASE("Create BitWriter and open new file", "[BitWriter]")
-{
-	SECTION("Create and open a new file")
-	{
+SCENARIO("BitWriter creates and opens file", "[BitWriter]") {
+	GIVEN("A file name") {
 		std::string filename = "_file_1.test.tmp";
 		fs::remove(filename);
 
-		REQUIRE_NOTHROW(BitWriter(filename));
-		REQUIRE(fs::exists(filename));
+		WHEN("File doesn't exists") {
+			REQUIRE_FALSE(fs::exists(filename));
 
-		fs::remove(filename);
-	}
-	SECTION("File already exists")
-	{
-		std::string filename = "_file_1.test.tmp";
-		{
-			fs::remove(filename);
+			THEN("BitWriter creates new file with given name") {
+				BitWriter bw(filename);
+
+				CHECK(fs::exists(filename));
+			}
+		}
+		WHEN("File does exists") {
 			std::ofstream someFile(filename);
 			someFile << "Some data";
+			someFile.close();
+
+			REQUIRE(fs::exists(filename));
+
+			THEN("BitWriter won't overwrite it and throw an error") {
+				REQUIRE_THROWS_WITH(BitWriter(filename), Catch::Contains("name already exists"));
+			}
 		}
-
-		REQUIRE_THROWS_WITH(BitWriter(filename), Catch::Contains("name already exists"));
-
 		fs::remove(filename);
 	}
-	SECTION("File name is invalid")
-	{
-		std::string invalidFilename = GENERATE("", "@#$%^&*?", "\0a\0");
-		REQUIRE_THROWS(BitWriter(invalidFilename));
+	GIVEN("An incorrect file name") {
+		std::string incorrectFilename = GENERATE("", "@#$%^&*?", "\0a\0");
+
+		WHEN("BitWriter tries to create it") {
+			THEN("an error is thrown") {
+				REQUIRE_THROWS(BitWriter(incorrectFilename));
+				REQUIRE_FALSE(fs::exists(incorrectFilename));
+			}
+		}
 	}
 }
 
-TEST_CASE("Write bits to a file", "[BitWriter]")
-{
-	SECTION("Write single byte (8 bits)")
-	{
+SCENARIO("BitWriter writes data to a file", "[BitWriter]") {
+	GIVEN("A file name") {
 		std::string filename = "_file_1.test.tmp";
 		fs::remove(filename);
-		REQUIRE_FALSE(fs::exists(filename));
 
-		{
+		AND_GIVEN("A BitWriter object created") {
 			BitWriter writer(filename);
-			// 'a' (0x61) <-- bits are read from right to left
-			writer << 1 << 0 << 0 << 0;		// 0001
-			writer << 0 << 1 << 1 << 0;     // 0110
-			writer.flush();
+
+			WHEN("one byte 'a' is written") {
+				// 'a' (0x61) <-- bits are read from right to left
+				writer << 1 << 0 << 0 << 0;		// 0001
+				writer << 0 << 1 << 1 << 0;     // 0110
+				writer.flush();
+
+				THEN("file contains that byte 'a'") {
+					std::ifstream file(filename, std::ios_base::binary);
+					char letterA;
+					file.read(&letterA, 1);
+
+					CHECK(letterA == 'a');
+				}
+			}
+			WHEN("less than a byte is written") {
+				writer << 1 << 0 << 1 << 1;
+				writer.flush();
+
+				THEN("file contains one byte padded with 0 bits") {
+					std::ifstream file(filename, std::ios_base::binary);
+					char byte;
+					file.read(&byte, 1);
+
+					CHECK(byte == 0b0000'1101);
+				}
+			}
 		}
-
-		REQUIRE(fs::exists(filename));
-		std::ifstream file(filename);
-		std::string letterA;
-		file >> letterA;
-		CHECK(letterA == "a");
-	}
-	SECTION("Write bits with padding")
-	{
-		std::string filename = "_file_1.test.tmp";
-		fs::remove(filename);
-		REQUIRE_FALSE(fs::exists(filename));
-
-		{
-			BitWriter writer(filename);
-			writer << 1 << 0 << 1;
-			writer.flush();
-		}
-
-		REQUIRE(fs::exists(filename));
-		std::ifstream file(filename);
-		byte_t byte;
-		file >> byte;
-		CHECK(byte == '\x05');
 	}
 }
