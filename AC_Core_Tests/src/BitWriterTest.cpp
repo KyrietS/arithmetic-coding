@@ -6,7 +6,6 @@
 
 #pragma warning( disable : 6237 6319 )
 
-
 namespace fs = std::filesystem;
 
 SCENARIO("BitWriter creates and opens file", "[BitWriter]") {

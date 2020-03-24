@@ -1,9 +1,12 @@
+//
+// Copyright (c) 2020 Sebastian Fojcik
+//
+
 #include "AdaptiveScalingCoder.hpp"
 #include "BitUtils/BitWriter.hpp"
 #include "BitUtils/BitReader.hpp"
 
 #include <cstdint>
-// Temporary
 #include <fstream>
 
 constexpr uint64_t powerOf(uint64_t a, uint64_t n)
@@ -21,7 +24,7 @@ using byte_t = uint8_t;
 
 void AdaptiveScalingCoder::encode(std::string path_in, std::string path_out)
 {
-	std::ifstream in(path_in, std::ios_base::binary);
+	std::ifstream in(path_in, std::ifstream::binary);
 	BitWriter out(path_out);
 	uint64_t a = 0L;
 	uint64_t b = WHOLE;
@@ -38,8 +41,8 @@ void AdaptiveScalingCoder::encode(std::string path_in, std::string path_out)
 
 		size_t symbol = byte;
 		uint64_t w = b - a;
-		b = a + (uint64_t)round(w * ((double)model.frequencyEnd(symbol) / model.frequencyTotal()));
-		a = a + (uint64_t)round(w * ((double)model.frequencyBegin(symbol) / model.frequencyTotal()));
+		b = a + llround(w * ((double)model.frequencyEnd(symbol) / model.frequencyTotal()));
+		a = a + llround(w * ((double)model.frequencyBegin(symbol) / model.frequencyTotal()));
 
 		// Scaling left or right
 		while (b < HALF || a > HALF)
@@ -83,7 +86,7 @@ void AdaptiveScalingCoder::encode(std::string path_in, std::string path_out)
 void AdaptiveScalingCoder::decode(std::string path_in, std::string path_out)
 {
 	BitReader in(path_in);
-	std::ofstream out(path_out, std::ios_base::binary);
+	std::ofstream out(path_out, std::ofstream::binary);
 
 	uint64_t a = 0L;
 	uint64_t b = WHOLE;
@@ -102,8 +105,8 @@ void AdaptiveScalingCoder::decode(std::string path_in, std::string path_out)
 		for (int symbol = 0; symbol < TOTAL_NUMBER_OF_SYMBOLS; symbol++)
 		{
 			uint64_t w = b - a;
-			uint64_t b0 = a + (uint64_t)round(w * ((double)model.frequencyEnd(symbol) / model.frequencyTotal()));
-			uint64_t a0 = a + (uint64_t)round(w * ((double)model.frequencyBegin(symbol) / model.frequencyTotal()));
+			uint64_t b0 = a + llround(w * ((double)model.frequencyEnd(symbol) / model.frequencyTotal()));
+			uint64_t a0 = a + llround(w * ((double)model.frequencyBegin(symbol) / model.frequencyTotal()));
 
 			// Symbol can be decoded
 			if (a0 <= z && z < b0) {

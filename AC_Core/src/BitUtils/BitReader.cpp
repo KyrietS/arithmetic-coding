@@ -8,7 +8,7 @@ BitReader::BitReader(std::string path)
 	if (!std::filesystem::exists(path))
 		throw std::runtime_error("file does not exists");
 
-	m_fileStream.open(path, std::ios_base::binary);
+	m_fileStream.open(path, std::istream::binary);
 	if (!m_fileStream.is_open())
 		throw std::runtime_error("Cannot open file");
 
