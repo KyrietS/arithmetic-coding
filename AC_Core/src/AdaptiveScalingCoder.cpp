@@ -119,6 +119,8 @@ void AdaptiveScalingCoder::decode(std::string path_in, std::string path_out)
 
 				a = a0;
 				b = b0;
+
+				break;
 			}
 		}
 
