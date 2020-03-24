@@ -120,6 +120,14 @@ TEST_CASE("Write byte to buffer", "[BitBuffer]")
 		CHECK(buff.size() == 8);
 	}
 	
+	SECTION("Fill buffer with bytes")
+	{
+		BitBuffer buff{ 16 };
+		buff.writeByte('\xFF');
+		buff.writeByte('\x00');
+		CHECK(buff.size() == 16);
+	}
+
 	SECTION("Write byte and bits alternately")
 	{
 		BitBuffer buff{ 10 };

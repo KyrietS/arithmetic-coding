@@ -57,7 +57,7 @@ BitBuffer& BitBuffer::operator<<(int bit)
 
 void BitBuffer::writeByte(byte_t byte)
 {
-	if (m_size + 8 >= capacity)
+	if (m_size + 8 > capacity)
 		throw std::length_error("Buffer has not enough space for another byte");
 	
 	for (int i = 0; i < 8; i++)
