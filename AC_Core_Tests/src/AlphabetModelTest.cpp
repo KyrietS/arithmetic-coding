@@ -6,7 +6,7 @@
 
 #pragma warning( disable : 6237 6319 )
 
-SCENARIO("AlphabeModel stores info about symbols", "[AlphabetModel]")
+SCENARIO("AlphabeModel has default values", "[AlphabetModel]")
 {
 	GIVEN("AlphabetModel instance")
 	{
@@ -19,6 +19,14 @@ SCENARIO("AlphabeModel stores info about symbols", "[AlphabetModel]")
 				CHECK(model.frequencyBegin(i) > model.frequencyBegin(i - 1));
 			}
 		}
+	}
+}
+
+SCENARIO("AlphabetModel can update frequencies")
+{
+	GIVEN("AlphabetModel instance")
+	{
+		AlphabetModel model;
 
 		WHEN("model is updated")
 		{
@@ -28,7 +36,6 @@ SCENARIO("AlphabeModel stores info about symbols", "[AlphabetModel]")
 				unsigned char randByte = rand() % 256; // from 0 to 255
 				model.update(randByte);
 			}
-
 
 			THEN("begin frequency is ascending") {
 				for (size_t i = 1; i < TOTAL_NUMBER_OF_SYMBOLS; i++){

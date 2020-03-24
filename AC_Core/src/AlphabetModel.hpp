@@ -1,8 +1,12 @@
+//
+// Copyright (c) 2020 Sebastian Fojcik
+//
+
 #pragma once
 
 #include <stdexcept>
 
-constexpr unsigned int TOTAL_NUMBER_OF_SYMBOLS = 255 + 1;
+constexpr unsigned int TOTAL_NUMBER_OF_SYMBOLS = 256 + 1;
 
 class AlphabetModel
 {
