@@ -26,6 +26,7 @@ void AdaptiveScalingCoder::encode(std::string path_in, std::string path_out)
 {
 	std::ifstream in(path_in, std::ifstream::binary);
 	BitWriter out(path_out);
+
 	uint64_t a = 0L;
 	uint64_t b = WHOLE;
 	int s = 0L;
@@ -44,31 +45,31 @@ void AdaptiveScalingCoder::encode(std::string path_in, std::string path_out)
 		b = a + llround(w * ((double)model.frequencyEnd(symbol) / model.frequencyTotal()));
 		a = a + llround(w * ((double)model.frequencyBegin(symbol) / model.frequencyTotal()));
 
-		// Scaling left or right
-		while (b < HALF || a > HALF)
+		// Scaling
+		while (true)
 		{
-			if (b < HALF) {
+			if (b < HALF) {			// Expand left. [a = 2a, b = 2b]
 				out.write(0);
 				out.writeN(1, s);
 				s = 0;
-				a *= 2;
-				b *= 2;
 			}
-			else if (a > HALF) {
+			else if (a > HALF) {	// Expand right. [a = 2(a-half), b = 2(b-HALF)]
 				out.write(1);
 				out.writeN(0, s);
 				s = 0;
-				a = 2 * (a - HALF);
-				b = 2 * (b - HALF);
+				a -= HALF;
+				b -= HALF;
 			}
-		}
-
-		// Scaling "blow up"
-		while (a > QUARTER && b < 3 * QUARTER) 
-		{
-			s += 1;
-			a = 2 * (a - QUARTER);
-			b = 2 * (b - QUARTER);
+			else if (a > QUARTER && b < 3 * QUARTER) {	// Expand middle (blow up). [a = 2(a-quarter), b = 2(b-quarter)]
+				s += 1;
+				a -= QUARTER;
+				b -= QUARTER;
+			}
+			else {		// No more scaling.
+				break;	// At this point [a,b] range is at least HALF in length.
+			}
+			a *= 2;
+			b *= 2;
 		}
 	}
 
@@ -124,32 +125,28 @@ void AdaptiveScalingCoder::decode(std::string path_in, std::string path_out)
 			}
 		}
 
-		// Scaling left or right
-		while (b < HALF || a > HALF) 
+		// Scaling
+		while (true) 
 		{
-			if (b < HALF) {
-				a *= 2;
-				b *= 2;
-				z *= 2;
+			if (b < HALF) {				// Expand left
+				/* nothing */
 			}
-			else if (a > HALF) {
-				a = 2 * (a - HALF);
-				b = 2 * (b - HALF);
-				z = 2 * (z - HALF);
+			else if (a > HALF) {		// Expand right
+				a -= HALF;
+				b -= HALF;
+				z -= HALF;
 			}
-
-			// Update z approximation
-			if (!in.eof() && in.read())
-				z += 1;
-			i += 1;
-		}
-
-		// Scaling "blow up"
-		while (a > QUARTER && b < 3 * QUARTER)
-		{
-			a = 2 * (a - QUARTER);
-			b = 2 * (b - QUARTER);
-			z = 2 * (z - QUARTER);
+			else if (a > QUARTER && b < 3 * QUARTER) {	// Expand middle (blow up)
+				a -= QUARTER;
+				b -= QUARTER;
+				z -= QUARTER;
+			}
+			else {		// No more scaling.
+				break;	// At this point [a,b] range is at least HALF in length.
+			}
+			a *= 2;
+			b *= 2;
+			z *= 2;
 
 			// Update z approximation
 			if (!in.eof() && in.read())
