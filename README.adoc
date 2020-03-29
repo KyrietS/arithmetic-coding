@@ -35,7 +35,7 @@ There are currently 3 projects in this workspace.
 
 _AC_Core_ library doesn't have any external dependencies except C++ standard library.
 
-* https://github.com/bfgroup/Lyra[Lyra] provides command-line arguments parser for _AC_CLI_.
+* https://github.com/CLIUtils/CLI11[CLI11] provides command-line arguments parser for _AC_CLI_.
 * https://github.com/catchorg/Catch2[Catch2] is used in _AC_Core_Tests_ as a testing framework.
 
 == Building

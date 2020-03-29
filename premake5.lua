@@ -48,7 +48,7 @@ workspace "Arithmetic Coder"
         files {
             "%{prj.name}/src/**.hpp",
             "%{prj.name}/src/**.cpp",
-            "%{prj.name}/vendor/lyra/lyra.hpp"
+            "%{prj.name}/vendor/CLI/CLI11.hpp"
         }
 
         includedirs {
