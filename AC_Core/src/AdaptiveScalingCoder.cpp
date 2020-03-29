@@ -3,6 +3,7 @@
 //
 
 #include "AdaptiveScalingCoder.hpp"
+#include "AdaptiveModel.hpp"
 #include "BitUtils/BitWriter.hpp"
 #include "BitUtils/BitReader.hpp"
 
@@ -20,12 +21,18 @@ static constexpr uint64_t WHOLE = powerOf(2, PRECISION);
 static constexpr uint64_t HALF = WHOLE / 2;
 static constexpr uint64_t QUARTER = WHOLE / 4;
 
+/* Parameters for data model */
+static constexpr int MODEL_SIZE = 256 + 1;					// 256 + 1 for EOF symbol
+static constexpr int MODEL_EOF_SYMBOL = 256;				// last symbol in model is EOF symbol
+static constexpr int MODEL_MAX_FREQUENCY = QUARTER - 1;		// maximal total frequency for model
+
 using byte_t = uint8_t;
 
 void AdaptiveScalingCoder::encode(std::string path_in, std::string path_out)
 {
 	std::ifstream in(path_in, std::ifstream::binary);
 	BitWriter out(path_out);
+	AdaptiveModel model(MODEL_SIZE, MODEL_MAX_FREQUENCY);
 
 	uint64_t a = 0L;
 	uint64_t b = WHOLE;
@@ -37,13 +44,13 @@ void AdaptiveScalingCoder::encode(std::string path_in, std::string path_out)
 		int byte = in.get();
 		if (byte == EOF) {
 			endOfInput = true;
-			byte = TOTAL_NUMBER_OF_SYMBOLS - 1; // last symbol is EOF symbol
+			byte = MODEL_EOF_SYMBOL; // get representation of EOF symbol
 		}
 
 		size_t symbol = byte;
 		uint64_t w = b - a;
-		b = a + llround(w * ((double)model.frequencyEnd(symbol) / model.frequencyTotal()));
-		a = a + llround(w * ((double)model.frequencyBegin(symbol) / model.frequencyTotal()));
+		b = a + llround(w * ((double)model.frequencyEnd(symbol) / model.totalFrequency()));
+		a = a + llround(w * ((double)model.frequencyBegin(symbol) / model.totalFrequency()));
 
 		// Scaling
 		while (true)
@@ -88,13 +95,14 @@ void AdaptiveScalingCoder::decode(std::string path_in, std::string path_out)
 {
 	BitReader in(path_in);
 	std::ofstream out(path_out, std::ofstream::binary);
+	AdaptiveModel model(MODEL_SIZE, MODEL_MAX_FREQUENCY);
 
 	uint64_t a = 0L;
 	uint64_t b = WHOLE;
 	uint64_t z = 0L;
 
 	size_t i = 1;
-	while (i <= PRECISION && !in.eof()) {
+	while (i <= PRECISION && !in.eof()) {		// Initialize 'z' with as many bits as you can
 		if (in.read())	// bit '1' read
 			z += powerOf(2, PRECISION - i);
 		i += 1;
@@ -103,15 +111,15 @@ void AdaptiveScalingCoder::decode(std::string path_in, std::string path_out)
 	while (true)
 	{
 		// try to decode a symbol
-		for (int symbol = 0; symbol < TOTAL_NUMBER_OF_SYMBOLS; symbol++)
+		for (int symbol = 0; symbol < model.size(); symbol++)
 		{
 			uint64_t w = b - a;
-			uint64_t b0 = a + llround(w * ((double)model.frequencyEnd(symbol) / model.frequencyTotal()));
-			uint64_t a0 = a + llround(w * ((double)model.frequencyBegin(symbol) / model.frequencyTotal()));
+			uint64_t b0 = a + llround(w * ((double)model.frequencyEnd(symbol) / model.totalFrequency()));
+			uint64_t a0 = a + llround(w * ((double)model.frequencyBegin(symbol) / model.totalFrequency()));
 
 			// Symbol can be decoded
 			if (a0 <= z && z < b0) {
-				if (symbol == TOTAL_NUMBER_OF_SYMBOLS - 1) { // End Of File symbol
+				if (symbol == MODEL_EOF_SYMBOL) { // End Of File symbol
 					return;
 				}
 
