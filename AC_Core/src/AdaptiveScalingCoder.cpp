@@ -24,7 +24,7 @@ static constexpr uint64_t QUARTER = WHOLE / 4;
 /* Parameters for data model */
 static constexpr int MODEL_SIZE = 256 + 1;					// 256 + 1 for EOF symbol
 static constexpr int MODEL_EOF_SYMBOL = 256;				// last symbol in model is EOF symbol
-static constexpr int MODEL_MAX_FREQUENCY = QUARTER - 1;		// maximal total frequency for model
+static constexpr int MODEL_MAX_FREQUENCY = QUARTER - 1;		// max total frequency for model
 
 using byte_t = uint8_t;
 

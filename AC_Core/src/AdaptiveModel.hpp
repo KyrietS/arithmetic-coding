@@ -29,7 +29,7 @@ public:
 
 	void update(size_t symbol)
 	{
-		if (totalFrequencyCounter == MAX_TOTAL_FREQUENCY) {		// Check if frequency conter reaches max
+		if (totalFrequencyCounter >= MAX_TOTAL_FREQUENCY) {		// Check if frequency counter reaches max
 			totalFrequencyCounter = 0;							// If so, halve all counts (keeping them
 			for (auto& freq : frequencies) {					// positive).
 				freq = freq / 2 != 0 ? freq / 2 : 1;			
@@ -71,6 +71,6 @@ public:
 private:
 	std::vector<size_t> frequencies;
 
-	size_t totalFrequencyCounter;	// total number of symbol apperance.
+	size_t totalFrequencyCounter;	// total number of symbols appearance.
 	const size_t MAX_TOTAL_FREQUENCY;
 };
