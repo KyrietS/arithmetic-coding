@@ -1,9 +1,16 @@
+#include <CLI/CLI11.hpp>
 #include <iostream>
+
 
 using namespace std;
 
-int main()
+int main(int argc, char** argv)
 {
-    cout << "AC_CLI" << endl;
+    CLI::App app;
+
+
+
+    CLI11_PARSE(app, argc, argv);
+
     return 0;
 }
