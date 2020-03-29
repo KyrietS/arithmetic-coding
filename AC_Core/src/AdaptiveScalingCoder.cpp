@@ -78,6 +78,8 @@ void AdaptiveScalingCoder::encode(std::string path_in, std::string path_out)
 			a *= 2;
 			b *= 2;
 		}
+		
+		model.update(symbol);
 	}
 
 	s += 1;
@@ -129,6 +131,7 @@ void AdaptiveScalingCoder::decode(std::string path_in, std::string path_out)
 				a = a0;
 				b = b0;
 
+				model.update(decoded);
 				break;
 			}
 		}
