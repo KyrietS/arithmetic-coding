@@ -28,7 +28,7 @@ void removeAllTempFiles()
 	fs::remove(decode_path_out);
 }
 
-SCENARIO("Encoding creates new file") 
+SCENARIO("Encoding creates new file", "[Coder]") 
 {
 	removeAllTempFiles();
 	AdaptiveScalingCoder coder;
@@ -46,7 +46,7 @@ SCENARIO("Encoding creates new file")
 	}
 }
 
-SCENARIO("Decoding creates new file")
+SCENARIO("Decoding creates new file", "[Coder]")
 {
 	removeAllTempFiles();
 	AdaptiveScalingCoder coder;
@@ -66,7 +66,7 @@ SCENARIO("Decoding creates new file")
 	removeAllTempFiles();
 }
 
-SCENARIO("Processing text files")
+SCENARIO("Processing text files", "[Coder]")
 {
 	removeAllTempFiles();
 	AdaptiveScalingCoder coder;
@@ -107,7 +107,7 @@ SCENARIO("Processing text files")
 	removeAllTempFiles();
 }
 
-SCENARIO("Processing binary files")
+SCENARIO("Processing binary files", "[Coder]")
 {
 	removeAllTempFiles();
 	AdaptiveScalingCoder coder;
