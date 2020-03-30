@@ -26,7 +26,9 @@ workspace "Arithmetic Coder"
     filter "toolset:gcc"    -- GCC v8.x
         links "stdc++fs" 
     filter "toolset:clang"  -- clang
-        premake.warn("Clang is not supporterd yet. Problems with <filesystem> may occur.")
+        if _OPTIONS["cc"] == "clang" then
+            premake.warn("Clang is not supporterd yet. Problems with <filesystem> may occur.")
+        end
         --links "c++fs"
         --buildoptions {"-stdlib=libc++"}
     filter {}
