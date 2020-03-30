@@ -2,8 +2,8 @@ workspace "Arithmetic Coder"
     architecture "x86_64"
 
     configurations { 
-        "Debug", 
-        "Release"
+        "Release", 
+        "Debug"
     }
 
     targetdir "bin/%{cfg.buildcfg}/%{prj.name}"
@@ -14,13 +14,22 @@ workspace "Arithmetic Coder"
     filter "system:Windows"
         systemversion "latest"
 
-    filter "configurations:Debug"
+    filter "Release"
+        defines { "NDEBUG", "RELEASE" }
+        optimize "On"
+
+    filter "Debug"
         defines { "DEBUG" }
         symbols "On"
 
-    filter "configurations:Release"
-        defines { "NDEBUG", "RELEASE" }
-        optimize "On"
+    -- <filesystem> support for all projects
+    filter "toolset:gcc"    -- GCC v8.x
+        links "stdc++fs" 
+    filter "toolset:clang"  -- clang
+        premake.warn("Clang is not supporterd yet. Problems with <filesystem> may occur.")
+        --links "c++fs"
+        --buildoptions {"-stdlib=libc++"}
+    filter {}
 
     -- AC_Core project cotains logic and algorithms for arithmetic coding.
     -- It also manages filesystem for input and output data.
@@ -35,6 +44,9 @@ workspace "Arithmetic Coder"
             "%{prj.name}/src/**.hpp",
             "%{prj.name}/src/**.cpp"
         }
+
+        filter "Release"
+            optimize "Speed"
 
     -- Simple Command-Line Interface for AC_Core. 
     -- There should be no critical logic here.
