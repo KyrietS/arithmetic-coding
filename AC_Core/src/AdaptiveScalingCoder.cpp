@@ -8,6 +8,7 @@
 #include "BitUtils/BitReader.hpp"
 
 #include <cstdint>
+#include <cmath>
 #include <fstream>
 
 constexpr uint64_t powerOf(uint64_t a, uint64_t n)
