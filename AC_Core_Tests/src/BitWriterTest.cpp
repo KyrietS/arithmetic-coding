@@ -94,3 +94,51 @@ SCENARIO("BitWriter writes data to a file", "[BitWriter]") {
 	}
 	fs::remove(filename);
 }
+
+SCENARIO("BitWriter collects stats about bits being written", "[BitWriter]")
+{
+	std::string filename = "_file_1.test.tmp";
+	fs::remove(filename);
+
+	GIVEN("A BitWriter object") {
+		BitWriter writer(filename);
+
+		WHEN("Compressed byte 0xFF is written")
+		{
+			writer.beginByte(0xFF);
+			writer << 1 << 1 << 1 << 1;		// Byte written as 0x0F
+			writer.flush();
+			std::vector<BitStat> stats = writer.getStats();
+
+			THEN("writer collected stats about this byte") {
+				CHECK(stats.at(0xFF).readCounter == 8);
+				CHECK(stats.at(0xFF).writeCounter == 4);
+			}
+
+			THEN("stats about other bytes are not updated") {
+				CHECK(stats.at(0x00).readCounter == 0);
+				CHECK(stats.at(0x00).writeCounter == 0);
+				CHECK(stats.at(0xAB).readCounter == 0);
+				CHECK(stats.at(0xAB).writeCounter == 0);
+			}
+		}
+		WHEN("nonexistent byte is begun")
+		{
+			writer.beginByte(0xFFF);
+			writer << 1 << 1;
+			writer.beginByte(-1);
+			writer << 0 << 0;
+			writer.flush();
+
+			THEN("no stats are updated") {
+				std::vector<BitStat> emptyStats = writer.getStats();
+				unsigned long long sum = 0;
+				for (auto s : emptyStats)
+					sum += s.readCounter + s.writeCounter;
+				CHECK(sum == 0);
+			}
+		}
+	}
+
+	fs::remove(filename);
+}

@@ -4,6 +4,7 @@
 
 #include "AdaptiveScalingCoder.hpp"
 #include "AdaptiveModel.hpp"
+#include "Statistics.hpp"
 #include "BitUtils/BitWriter.hpp"
 #include "BitUtils/BitReader.hpp"
 
@@ -29,7 +30,7 @@ static constexpr int MODEL_MAX_FREQUENCY = QUARTER - 1;		// max total frequency 
 
 using byte_t = uint8_t;
 
-void AdaptiveScalingCoder::encode(std::string path_in, std::string path_out)
+Statistics AdaptiveScalingCoder::encode(std::string path_in, std::string path_out)
 {
 	std::ifstream in(path_in, std::ifstream::binary);
 	BitWriter out(path_out);
@@ -43,6 +44,7 @@ void AdaptiveScalingCoder::encode(std::string path_in, std::string path_out)
 	while (!endOfInput)
 	{
 		int byte = in.get();
+		out.beginByte(byte);		// for statistics purposes
 		if (byte == EOF) {
 			endOfInput = true;
 			byte = MODEL_EOF_SYMBOL; // get representation of EOF symbol
@@ -92,6 +94,8 @@ void AdaptiveScalingCoder::encode(std::string path_in, std::string path_out)
 		out.write(1);
 		out.writeN(0, s);
 	}
+
+	return Statistics(out.getStats());
 }
 
 void AdaptiveScalingCoder::decode(std::string path_in, std::string path_out)
