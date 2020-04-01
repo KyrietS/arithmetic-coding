@@ -1,6 +1,8 @@
 #include <fstream>
 #include <string>
+#include <vector>
 #include "BitBuffer.hpp"
+#include "BitStat.hpp"
 
 class BitWriter
 {
@@ -17,6 +19,9 @@ public:
 
 	void flush();
 
+	void beginByte(int byte);
+	std::vector<BitStat> getStats();
+
 	virtual ~BitWriter();
 
 private:
@@ -24,4 +29,6 @@ private:
 
 	std::ofstream m_fileStream;
 	BitBuffer m_bitBuffer;
+	int m_currentByte = -1;
+	std::vector<BitStat> m_stats;
 };

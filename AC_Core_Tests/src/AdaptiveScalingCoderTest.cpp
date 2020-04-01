@@ -7,7 +7,6 @@
 #include <fstream>
 #include <filesystem>
 #include <algorithm>
-
 #pragma warning( disable : 6237 6319 )
 
 namespace fs = std::filesystem;
@@ -94,13 +93,19 @@ SCENARIO("Processing text files", "[Coder]")
 		file.close();
 
 		WHEN("input file is encoded") {
-			coder.encode(encode_path_in, encode_path_out);
+			Statistics stats = coder.encode(encode_path_in, encode_path_out);
 			REQUIRE(fs::exists(encode_path_out));
 
 			THEN("output file can be decoded") {
 				coder.decode(encode_path_out, decode_path_out);
 
 				CHECK(files_equal(encode_path_in, decode_path_out));
+			}
+
+			THEN("stats are calculated") {
+				CHECK(stats.entropy() > 1.0);
+				CHECK(stats.averageCodingLength() >= 3.0);
+				CHECK(stats.compressionRatio() >= 0.5);
 			}
 		}
 	}
@@ -140,7 +145,7 @@ SCENARIO("Processing binary files", "[Coder]")
 		file.close();
 		
 		WHEN("input file is encoded") {
-			coder.encode(encode_path_in, encode_path_out);
+			Statistics stats = coder.encode(encode_path_in, encode_path_out);
 			REQUIRE(fs::exists(encode_path_out));
 
 			THEN("output file can be decoded") {
@@ -148,11 +153,16 @@ SCENARIO("Processing binary files", "[Coder]")
 
 				CHECK(files_equal(encode_path_in, decode_path_out));
 			}
+
+			THEN("stats are calculated") {
+				CHECK(stats.entropy() > 7.5);
+				CHECK(stats.averageCodingLength() >= 8);
+				CHECK(stats.compressionRatio() <= 0);
+			}
 		}
 	}
 	removeAllTempFiles();
 }
-
 
 bool files_equal(const std::string& path1, const std::string& path2)
 {
