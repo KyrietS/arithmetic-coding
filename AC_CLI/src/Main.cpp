@@ -14,6 +14,8 @@ bool endsWith(std::string const& fullString, std::string const& ending) {
     }
 }
 
+void printStats(Statistics stats);
+
 int main(int argc, char** argv)
 {
     CLI::App app;
@@ -24,6 +26,7 @@ int main(int argc, char** argv)
     std::string path_in;
     std::string path_out;
     bool file_override{ false };
+    bool print_stats{ false };
 
     // encode | decode option group.
     auto action = app.add_option_group("Action type", "What action on a file should be performed.");
@@ -44,6 +47,9 @@ int main(int argc, char** argv)
 
     // file override option.
     app.add_flag("-o,--override", file_override, "Whether output file should override existing file.");
+
+    // print stats after encoding process
+    app.add_flag("-s,--stats", print_stats, "Print stats after encoding process.");
 
     app.get_formatter()->label("Positionals", "Files");
     app.get_formatter()->label("TEXT", "PATH");
@@ -86,11 +92,24 @@ int main(int argc, char** argv)
     AdaptiveScalingCoder coder;
 
     if (encode) {
-        coder.encode(path_in, path_out);
+        Statistics stats = coder.encode(path_in, path_out);
+        if (print_stats)
+            printStats(stats);
     }
     else if (decode) {
         coder.decode(path_in, path_out);
     }
 
     return 0;
+}
+
+void printStats(Statistics stats)
+{
+    std::cout.precision(2);
+    std::cout << std::fixed;
+    std::cout << "input entropy:       " << stats.entropy() << std::endl;
+    std::cout << "average code length: " << stats.averageCodingLength() << "   [bits/byte]" << std::endl;
+    std::cout << "compression rate:    " << stats.compressionRatio()*100 << "%" << std::endl;
+    std::cout << std::defaultfloat;
+    std::cout.precision();
 }
