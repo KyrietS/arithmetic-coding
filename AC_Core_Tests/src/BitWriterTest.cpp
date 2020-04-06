@@ -13,7 +13,7 @@ SCENARIO("BitWriter creates and opens file", "[BitWriter]") {
 		std::string filename = "_file_1.test.tmp";
 		fs::remove(filename);
 
-		WHEN("File doesn't exists") {
+		WHEN("File doesn't exist") {
 			REQUIRE_FALSE(fs::exists(filename));
 
 			THEN("BitWriter creates new file with given name") {
@@ -72,7 +72,7 @@ SCENARIO("BitWriter writes data to a file", "[BitWriter]") {
 			writer << 1 << 0 << 1 << 1;
 			writer.flush();
 
-			THEN("file contains one byte padded with 0 bits") {
+			THEN("file contains one byte padded with '0' bits") {
 				std::ifstream file(filename, std::ios_base::binary);
 				char byte;
 				file.read(&byte, 1);
@@ -80,11 +80,26 @@ SCENARIO("BitWriter writes data to a file", "[BitWriter]") {
 				CHECK(byte == 0b0000'1101);
 			}
 		}
+		WHEN("more than a byte is written") {
+			writer << 1 << 1 << 0 << 0;
+			writer << 0 << 1 << 1 << 0;
+			writer << 1 << 1 << 1;
+			writer.flush();
+
+			THEN("file containes two bytes padded with '0' bits") {
+				std::ifstream file(filename, std::ifstream::binary);
+				char firstByte = file.get();
+				char secondByte = file.get();
+
+				CHECK(firstByte == 0b0110'0011);
+				CHECK(secondByte == 0b0000'0111);
+			}
+		}
 		WHEN("six same bits are written") {
 			writer.writeN(1, 6);
 			writer.flush();
 
-			THEN("file contains six '1' bist") {
+			THEN("file contains six '1' bits") {
 				std::ifstream file(filename, std::ios_base::binary);
 				char byte = file.get();
 
