@@ -20,10 +20,10 @@ std::string path = ".file.test.tmp";
 SCENARIO("Bits order is kept")
 {
 	fs::remove(path);
-	BitWriter writer(path);
 
 	WHEN("BitWriter writes a sequence of bits")
 	{
+		BitWriter writer(path);
 		writer.write(0);
 		writer.write(1);
 		writer.write(1);
@@ -50,4 +50,5 @@ SCENARIO("Bits order is kept")
 			CHECK(reader.eof() == true);
 		}
 	}
+	fs::remove(path);
 }
