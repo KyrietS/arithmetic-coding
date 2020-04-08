@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <cmath>
 #include <fstream>
+#include <cassert>
 
 constexpr uint64_t powerOf(uint64_t a, uint64_t n)
 {
@@ -117,15 +118,24 @@ void AdaptiveScalingCoder::decode(std::string path_in, std::string path_out)
 
 	while (true)
 	{
-		// try to decode a symbol
-		for (int symbol = 0; symbol < model.size(); symbol++)
+		// decode a symbol (binary search)
+		size_t left = 0;
+		size_t right = model.size() - 1;
+		while (left <= right)
 		{
+			size_t symbol = (left + right) / 2;
 			uint64_t w = b - a;
 			uint64_t b0 = a + llround(w * ((double)model.frequencyEnd(symbol) / model.totalFrequency()));
 			uint64_t a0 = a + llround(w * ((double)model.frequencyBegin(symbol) / model.totalFrequency()));
 
-			// Symbol can be decoded
-			if (a0 <= z && z < b0) {
+			assert(a0 < b0); // must be true
+
+			if (z < a0)
+				right = symbol - 1;
+			else if (z >= b0)
+				left = symbol + 1;
+			else // symbol found: a0 <= z < b0
+			{
 				if (symbol == MODEL_EOF_SYMBOL) { // End Of File symbol
 					return;
 				}
