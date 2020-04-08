@@ -11,7 +11,10 @@ class AdaptiveModel
 {
 public:
 	AdaptiveModel(size_t numberOfSymbols, size_t maxTotalFrequency)
-		: frequencies( numberOfSymbols ), MAX_TOTAL_FREQUENCY(maxTotalFrequency)
+		: frequencies( numberOfSymbols ), 
+		freqBegin( numberOfSymbols ),
+		freqEnd( numberOfSymbols ),
+		MAX_TOTAL_FREQUENCY(maxTotalFrequency)
 	{
 		reset();
 	}
@@ -25,6 +28,8 @@ public:
 
 		if (totalFrequencyCounter >= MAX_TOTAL_FREQUENCY)
 			throw std::invalid_argument("max frequency is too low to fit that number of symbols");
+
+		updateFrequencies();
 	}
 
 	void update(size_t symbol)
@@ -39,23 +44,18 @@ public:
 
 		frequencies.at(symbol)++;
 		totalFrequencyCounter++;
+
+		updateFrequencies();
 	}
 
 	size_t frequencyBegin(size_t symbol)
 	{
-		if (symbol >= frequencies.size())
-			throw std::out_of_range("Symbol doesn't belong to model");
-
-		size_t result = 0;
-		for (size_t i = 0; i < symbol; i++) 
-			result += frequencies[i];
-
-		return result;
+		return freqBegin.at(symbol);
 	}
 
 	size_t frequencyEnd(size_t symbol)
 	{
-		return frequencyBegin(symbol) + frequencies.at(symbol);
+		return freqEnd.at(symbol);
 	}
 
 	size_t totalFrequency()
@@ -70,7 +70,20 @@ public:
 
 private:
 	std::vector<size_t> frequencies;
+	std::vector<size_t> freqBegin;
+	std::vector<size_t> freqEnd;
 
 	size_t totalFrequencyCounter;	// total number of symbols appearance.
 	const size_t MAX_TOTAL_FREQUENCY;
+
+	void updateFrequencies()
+	{
+		size_t prevFrequency = 0;
+		for (size_t symbol = 0; symbol < frequencies.size(); symbol++)
+		{
+			freqBegin[symbol] = prevFrequency;
+			prevFrequency += frequencies[symbol];
+			freqEnd[symbol] = prevFrequency;		// end = begin + frequency
+		}
+	}
 };
