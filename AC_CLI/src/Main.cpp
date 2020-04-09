@@ -89,7 +89,7 @@ int main(int argc, char** argv)
     }
 
     // The meat.
-    AdaptiveScalingCoder coder;
+    AdaptiveScalingCoder coder(print_stats);
 
     if (encode) {
         Statistics stats = coder.encode(path_in, path_out);

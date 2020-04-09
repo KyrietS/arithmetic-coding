@@ -7,11 +7,14 @@
 #include "Statistics.hpp"
 #include "BitUtils/BitWriter.hpp"
 #include "BitUtils/BitReader.hpp"
+#include "FileSize.hpp"
 
 #include <cstdint>
 #include <cmath>
 #include <fstream>
 #include <cassert>
+#include <iostream>
+#include <algorithm>
 
 constexpr uint64_t powerOf(uint64_t a, uint64_t n)
 {
@@ -36,6 +39,10 @@ Statistics AdaptiveScalingCoder::encode(std::string path_in, std::string path_ou
 	std::ifstream in(path_in, std::ifstream::binary);
 	BitWriter out(path_out);
 	AdaptiveModel model(MODEL_SIZE, MODEL_MAX_FREQUENCY);
+
+	// for progress bar
+	long filesize = getFileSize(path_in);
+	uint64_t bytesRead = 0;
 
 	uint64_t a = 0L;
 	uint64_t b = WHOLE;
@@ -83,6 +90,10 @@ Statistics AdaptiveScalingCoder::encode(std::string path_in, std::string path_ou
 			b *= 2;
 		}
 		
+		// update progress bar
+		bytesRead++;
+		updateProgress((double)(bytesRead) / filesize);
+
 		model.update(symbol);
 	}
 
@@ -96,6 +107,7 @@ Statistics AdaptiveScalingCoder::encode(std::string path_in, std::string path_ou
 		out.writeN(0, s);
 	}
 
+	clearProgress();
 	return Statistics(out.getStats());
 }
 
@@ -104,6 +116,10 @@ void AdaptiveScalingCoder::decode(std::string path_in, std::string path_out)
 	BitReader in(path_in);
 	std::ofstream out(path_out, std::ofstream::binary);
 	AdaptiveModel model(MODEL_SIZE, MODEL_MAX_FREQUENCY);
+
+	// for progress bar
+	long filesize = getFileSize(path_in);
+	uint64_t bitsRead = 0;
 
 	uint64_t a = 0L;
 	uint64_t b = WHOLE;
@@ -114,6 +130,7 @@ void AdaptiveScalingCoder::decode(std::string path_in, std::string path_out)
 		if (in.read())	// bit '1' read
 			z += powerOf(2, PRECISION - i);
 		i += 1;
+		bitsRead++;  // for progress bar
 	}
 
 	while (true)
@@ -137,6 +154,7 @@ void AdaptiveScalingCoder::decode(std::string path_in, std::string path_out)
 			else // symbol found: a0 <= z < b0
 			{
 				if (symbol == MODEL_EOF_SYMBOL) { // End Of File symbol
+					clearProgress();
 					return;
 				}
 
@@ -147,6 +165,7 @@ void AdaptiveScalingCoder::decode(std::string path_in, std::string path_out)
 				b = b0;
 
 				model.update(decoded);
+				updateProgress((double)(bitsRead + 16) / filesize / 8);
 				break;
 			}
 		}
@@ -178,6 +197,35 @@ void AdaptiveScalingCoder::decode(std::string path_in, std::string path_out)
 			if (!in.eof() && in.read())
 				z += 1;
 			i += 1;
+			bitsRead++;  // for progress bar
 		}
+	}
+}
+
+void AdaptiveScalingCoder::updateProgress(double progress)
+{
+	if (!printProgress || int(progress * 100.0) == currentProgress)
+		return;
+
+	currentProgress = std::min(int(progress * 100.0), 100);
+
+	std::cout << "[";
+	int pos = (int)((double)progressbarWidth * progress);
+	for (int i = 0; i < progressbarWidth; ++i) {
+		if (i < pos) std::cout << "=";
+		else if (i == pos) std::cout << ">";
+		else std::cout << " ";
+	}
+	std::cout << "] " << currentProgress << " %\r";
+	std::cout.flush();
+}
+
+void AdaptiveScalingCoder::clearProgress()
+{
+	if (printProgress)
+	{
+		std::cout << std::string(progressbarWidth + 8, ' ');
+		std::cout << "\r";
+		std::cout.flush();
 	}
 }
