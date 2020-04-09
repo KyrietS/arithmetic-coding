@@ -49,7 +49,7 @@ int main(int argc, char** argv)
     app.add_flag("-o,--override", file_override, "Whether output file should override existing file.");
 
     // print stats after encoding process
-    app.add_flag("-s,--stats", print_stats, "Print stats after encoding process.");
+    app.add_flag("-s,--stats", print_stats, "Print stats during and after encoding process.");
 
     app.get_formatter()->label("Positionals", "Files");
     app.get_formatter()->label("TEXT", "PATH");
