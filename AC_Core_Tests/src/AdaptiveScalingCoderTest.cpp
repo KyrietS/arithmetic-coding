@@ -104,7 +104,7 @@ SCENARIO("Processing text files", "[Coder]")
 
 			THEN("stats are calculated") {
 				CHECK(stats.entropy() > 1.0);
-				CHECK(stats.averageCodingLength() >= 3.0);
+				CHECK(stats.averageCodingLength() >= 2.0);
 				CHECK(stats.compressionRatio() >= 0.5);
 			}
 		}

@@ -28,18 +28,16 @@ public:
 
 	double averageCodingLength()
 	{
-		double sum = 0;
-		int numOfBytesEmitted = 0;
+		unsigned long long inputBits = 0;
+		unsigned long long outputBits = 0;
+
 		for (size_t i = 0; i < m_stats.size(); i++)
 		{
-			if (m_stats[i].readCounter > 0)
-			{
-				numOfBytesEmitted++;
-				sum += (double)m_stats[i].writeCounter / m_stats[i].readCounter;
-			}
+			inputBits += m_stats[i].readCounter;
+			outputBits += m_stats[i].writeCounter;
 		}
 
-		return (sum / numOfBytesEmitted) * 8;	// bits per symbol (byte)
+		return 8 * ((double)outputBits / inputBits);	// bits per symbol (byte)
 	}
 
 	double compressionRatio()
