@@ -10,7 +10,31 @@ A simple implementation of compression method known as context-adaptive arithmet
 
 == Usage
 
-_TBD_
+Type `ac --help` to get help. General usage:
+----
+ac (--encode|--decode) [-o,-s] source [dest]
+----
+=== Available options
+----
+  -e,--encode                 Encode a file
+  -d,--decode                 Decode a file
+  -h,--help                   Print help message and exit
+  -o,--override               Whether output file should override existing file.
+  -s,--stats                  Print stats during and after encoding process.
+----
+By default `dest` is set to `{source}.ac`.
+
+=== Examples
+
+*Encoding file with stats printed out* (`dest` file must not exist)
+----
+./ac --encode -s file.txt output.ac
+----
+*Decoding file with progress bar* (`dest file will be overwritten`)
+----
+./ac -dso output.ac file2.txt
+----
+
 
 == Project structure
 
@@ -43,6 +67,25 @@ _AC_Core_ library doesn't have any external dependencies except C++ standard lib
 You need https://premake.github.io/download.html[Premake5] to easily generate project files (e.g. for Visual Studio, Code::Blocks, Xcode, GNU Make and more)
 
 In root folder run `premake5` with an argument depending on IDE you want to use. For example, run: `premake5 vs2019` if you want to generate project for Visual Studio 2019.
+
+=== Visual Studio (Windows)
+In root folder run `premak5 vs2019`. Visual Studio solution with projects will be generated. Open `Arithmetic Coder.sln` with Visual Studio. Everything should be configured properly to build, run and test the program.
+
+=== Makefile (Linux)
+In root folder run `premake5 [--cc=gcc|clang] gmake2`. If `--cc` option is not set, then default C++ compiler will be used. Makefile files structure will be generated. In root folder run `make help` to get available build options. General usage is:
+----
+make [config=release|debug] [target]
+
+TARGETS:
+    all (default)
+    AC_CLI
+    AC_Core
+    AC_Core_Tests
+----
+
+Executable binaries are stored in `bin/` folder. Release config is used by default.
+
+*Importnat note:* Because of using `<filesystem>` standard library in `AC_CLI`, `AC_Core` and `AC_Core_Tests` projects it is necessary to have it installed on your computer. If you generate project for *gcc* then library `stdc\++fs` is automatically linked via `-l` option. Note that `<filesystem>` library is available in gcc since version _8.x_. In earlier versions there was `<experimental/filesystem>`. Since version _9.x_ of gcc it's not necessary to link against `stdc++fs` anymore. *Clang* was not tested.
 
 == Tests
 
